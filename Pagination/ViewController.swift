@@ -11,11 +11,14 @@ import UIKit
 final class ViewController: UIViewController {
     
     //MARK: - IBOutlets
-    @IBOutlet weak var tableView: UITableView!
-    @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
-    @IBOutlet weak var activityIndicatorHeight: NSLayoutConstraint!
+    @IBOutlet private weak var tableView: UITableView!
+    
+    private let loadingActivityIndicator = UIActivityIndicatorView(style: .medium)
     
     lazy var footballTeams: [String] = [
+        "Besiktas", "Galatasaray", "Fenerbahce",
+        "Besiktas", "Galatasaray", "Fenerbahce",
+        "Besiktas", "Galatasaray", "Fenerbahce",
         "Besiktas", "Galatasaray", "Fenerbahce",
         "Besiktas", "Galatasaray", "Fenerbahce",
         "Besiktas", "Galatasaray", "Fenerbahce",
@@ -24,7 +27,7 @@ final class ViewController: UIViewController {
     ]
     
     lazy var defaultFootballTeams = [
-        "SAMPIYON BESIKTAS",
+        "SAMPIYON BJK",
         "BJK", "GS", "FB",
         "BJK", "GS", "FB",
         "BJK", "GS", "FB",
@@ -34,32 +37,28 @@ final class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        setUpDelegations()
+        configureTableView()
     }
     
-    func setUpDelegations() {
+    func configureTableView() {
         tableView.delegate = self
         tableView.dataSource = self
-        activityIndicator.isHidden = true
-        activityIndicatorHeight.constant = 0
     }
     
-    func isLoading(to loading: Bool) {
-        if loading {
-            activityIndicator.isHidden = false
-            activityIndicatorHeight.constant = 20
-            activityIndicator.startAnimating()
+    func isLoadingMoreTeams(to loadingStatus: Bool) {
+        if loadingStatus {
+            loadingActivityIndicator.startAnimating()
             self.footballTeams.append(contentsOf: defaultFootballTeams)
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2, execute: {
-                self.activityIndicator.stopAnimating()
-                self.activityIndicator.hidesWhenStopped = true
-                self.activityIndicatorHeight.constant = 0
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5, execute: {
                 self.tableView.reloadData()
             })
+        } else {
+            loadingActivityIndicator.stopAnimating()
+            loadingActivityIndicator.hidesWhenStopped = true
         }
     }
 }
+
 //MARK: - TableView Delegate and DataSource
 extension ViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -72,11 +71,19 @@ extension ViewController: UITableViewDelegate, UITableViewDataSource {
         return cell
     }
     
-    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        
-        if indexPath.row == footballTeams.count - 1 {
-            isLoading(to: true)
-        }
+    func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
+        let footerView = UIView(frame: CGRect.init(x: 0, y: 0, width: tableView.frame.width, height: 30))
+        loadingActivityIndicator.center = footerView.center
+        footerView.addSubview(loadingActivityIndicator)
+        tableView.tableFooterView = footerView
+        return footerView
     }
     
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        if indexPath.row == footballTeams.count - 1 {
+            isLoadingMoreTeams(to: true)
+        } else {
+            isLoadingMoreTeams(to: false)
+        }
+    }
 }
