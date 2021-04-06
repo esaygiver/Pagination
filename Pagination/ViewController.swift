@@ -40,12 +40,12 @@ final class ViewController: UIViewController {
         configureTableView()
     }
     
-    func configureTableView() {
+    private func configureTableView() {
         tableView.delegate = self
         tableView.dataSource = self
     }
     
-    func isLoadingMoreTeams(to loadingStatus: Bool) {
+    private func isLoadingMoreTeams(to loadingStatus: Bool) {
         if loadingStatus {
             loadingActivityIndicator.startAnimating()
             self.footballTeams.append(contentsOf: defaultFootballTeams)
